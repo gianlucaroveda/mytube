@@ -1,13 +1,10 @@
-// MyTube - app.js
-// NOTE: Replace 'YOUR_API_KEY' below with your YouTube Data API key to enable search.
-
 
 let API_KEY = null;
 
-// chiave parziale salvata nel codice
+
 const API_KEY_ = 'AIzaSyDV7syNvSBF_zpYwKypFcEmZHyzhd20q';
 
-// all’avvio, chiedi le ultime 2 cifre
+
 window.addEventListener('load', () => {
   const last = localStorage.getItem('yt_key_suffix') || prompt("Password 9c:");
   if (last && /^[A-Za-z0-9_-]{2}$/.test(last)) {
@@ -18,7 +15,7 @@ window.addEventListener('load', () => {
   }
 });
 
- // <-- Inserisci la tua chiave
+
 const MAX_RESULTS = 8;
 
 // app state
