@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>MyTube</title>
+
+  <!-- Manifest e CSS -->
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="stylesheet" href="styles.css" />
+
+  <!-- ✅ Content Security Policy -->
+  <!-- Permette iframe e media da YouTube -->
+  <meta http-equiv="Content-Security-Policy"
+        content="
+          default-src 'self';
+          script-src 'self' https://www.youtube.com https://www.googleapis.com;
+          frame-src https://www.youtube.com https://www.youtube-nocookie.com;
+          img-src 'self' https://i.ytimg.com https://yt3.ggpht.com data:;
+          connect-src https://www.googleapis.com;
+          style-src 'self' 'unsafe-inline';
+        ">
+</head>
+<body>
+  <header class="topbar">
+    <h1>MyTube</h1>
+    <div class="actions">
+      <input id="searchInput" placeholder="Cerca video YouTube..." />
+      <button id="searchBtn">Cerca</button>
+      <input id="addUrl" placeholder="Aggiungi per URL o ID" />
+      <button id="addBtn">Aggiungi</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="left">
+      <div id="results" class="card">
+        <h2>Risultati</h2>
+        <ul id="resultsList"></ul>
+      </div>
+
+      <div id="playerCard" class="card">
+        <div id="player"></div>
+        <div class="controls">
+          <button id="prev">⟨ Prev</button>
+          <button id="play">Play</button>
+          <button id="next">Next ⟩</button>
+        </div>
+      </div>
+    </section>
+
+    <aside class="right card">
+      <h2>Playlist</h2>
+      <ul id="playlistList"></ul>
+      <div class="playlist-actions">
+        <button id="saveLocal">Salva localmente</button>
+        <button id="loadLocal">Carica locale</button>
+        <button id="clearPlaylist">Svuota</button>
+      </div>
+    </aside>
+  </main>
+
+  <footer class="foot">
+    MyTube — playlist locali • Usa la tua YouTube Data API key in app.js
+  </footer>
+
+  <!-- YouTube API + script -->
+  <script src="https://www.youtube.com/iframe_api" async></script>
+  <script src="app.js" defer></script>
+</body>
+</html>
