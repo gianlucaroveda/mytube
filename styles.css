@@ -1,24 +1,356 @@
-:root{
-  --bg:#f6f8fa;--card:#ffffff;--accent:#1e88e5;--muted:#6b7280;
+/* --- Tema generale --- */
+:root {
+  --accent: #b05cff;
+  --accent-hover: #ff4d9d;
+  --card: #111;
+  --bg: #000;
 }
-*{box-sizing:border-box}
-body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial; margin:0; background:var(--bg); color:#111}
-.topbar{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--card);box-shadow:0 1px 2px rgba(0,0,0,0.04)}
-.topbar h1{margin:0;font-size:1.1rem}
-.actions input{padding:8px;margin-right:6px}
-main{display:flex;gap:16px;padding:16px;max-width:1100px;margin:16px auto}
-.left{flex:1;display:flex;flex-direction:column;gap:16px}
-.right{width:320px}
-.card{background:var(--card);padding:12px;border-radius:8px;box-shadow:0 1px 2px rgba(0,0,0,0.04)}
-ul{list-style:none;padding:0;margin:0}
-li.item{display:flex;align-items:center;gap:8px;padding:8px;border-bottom:1px solid #eee}
-li.item img{width:88px;height:50px;object-fit:cover;border-radius:4px;background:#ddd}
-.controls{display:flex;gap:8px;margin-top:8px}
-button{background:var(--accent);color:white;border:none;padding:8px 10px;border-radius:6px;cursor:pointer}
-button.secondary{background:#6b7280}
-.playlist-actions{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
-.foot{text-align:center;padding:12px;color:var(--muted);font-size:0.9rem}
-@media(max-width:900px){
-  main{flex-direction:column;padding:12px}
-  .right{width:auto}
+
+body {
+  background: #000;
+  color: #fff;
+  font-family: "Poppins", sans-serif;
+  margin: 0;
+  padding: 0;
 }
+
+/* --- Layout principale --- */
+main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  padding: 32px;
+  min-height: 100vh;
+}
+
+/* --- Area di ricerca --- */
+.search-area {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px;
+  margin-top: 8px;
+  background: var(--card);
+  border-radius: 8px;
+  box-shadow: 0 0 12px rgba(176, 92, 255, 0.2);
+  width: 100%;
+  max-width: 600px;
+}
+
+.results-container {
+  max-height: 260px;
+  overflow-y: auto;
+  background: var(--bg);
+  padding: 8px;
+  border-radius: 6px;
+  box-shadow: inset 0 0 3px rgba(176, 92, 255, 0.2);
+  transition: all 0.3s ease;
+}
+
+.results-container ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.results-container ul::-webkit-scrollbar {
+  width: 6px;
+}
+.results-container ul::-webkit-scrollbar-thumb {
+  background: #777;
+  border-radius: 3px;
+}
+
+/* Stato collassato */
+.results-container.collapsed {
+  max-height: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+/* --- Toggle futuristico --- */
+#checkbox {
+  display: none;
+}
+
+.toggle {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  margin: 10px auto 0;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  background: radial-gradient(circle at 30% 30%, #2b2632, #191421);
+  border-radius: 50%;
+  box-shadow: 0 0 15px rgba(176, 92, 255, 0.6);
+  transition: transform 0.5s ease, box-shadow 0.3s ease;
+}
+
+.bars {
+  width: 60%;
+  height: 3.5px;
+  background-color: white;
+  border-radius: 4px;
+  transition: all 0.5s ease;
+}
+
+#checkbox:checked + .toggle #bar2 {
+  transform: scaleX(0);
+}
+
+#checkbox:checked + .toggle #bar1 {
+  transform: rotate(45deg);
+}
+
+#checkbox:checked + .toggle #bar3 {
+  transform: rotate(-45deg);
+}
+
+#checkbox:checked + .toggle {
+  transform: rotate(180deg) scale(1.05);
+  box-shadow: 0 0 20px rgba(176, 92, 255, 0.8);
+}
+
+/* --- Player Card --- */
+#playerCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  background: var(--card);
+  padding: 24px;
+  border-radius: 16px;
+  box-shadow: 0 0 15px rgba(176, 92, 255, 0.15);
+  width: 90%;
+  max-width: 500px;
+}
+
+
+/* --- Player YouTube adattivo --- */
+#player {
+  position: relative;
+  width: 100%;
+  max-width: 480px; /* dimensione massima su desktop */
+  aspect-ratio: 16 / 9;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 0 15px rgba(176, 92, 255, 0.25);
+}
+
+#player iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  display: block;
+}
+
+/* --- Controlli stile iPod --- */
+.controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 18px;
+  margin-top: 16px;
+}
+
+.controls button {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: none;
+  background: radial-gradient(circle at 30% 30%, #b05cff, #5c00b0);
+  color: white;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  box-shadow: 0 0 8px rgba(176, 92, 255, 0.4),
+              inset 0 0 6px rgba(255, 255, 255, 0.1);
+  transition: transform 0.15s ease, box-shadow 0.3s ease;
+}
+
+.controls button:hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 15px rgba(176, 92, 255, 0.8),
+              inset 0 0 10px rgba(255, 255, 255, 0.2);
+}
+
+.controls button:active {
+  transform: scale(0.95);
+}
+
+#play {
+  width: 72px;
+  height: 72px;
+  font-size: 16px;
+  background: radial-gradient(circle at 30% 30%, #ff4d9d, #b00060);
+}
+
+/* --- Playlist --- */
+aside.right {
+  width: 90%;
+  max-width: 500px;
+  overflow-y: auto;
+  padding: 16px;
+  border-radius: 12px;
+  background: var(--card);
+  box-shadow: 0 0 10px rgba(176, 92, 255, 0.1);
+}
+
+aside.right::-webkit-scrollbar {
+  width: 6px;
+}
+aside.right::-webkit-scrollbar-thumb {
+  background: #444;
+  border-radius: 3px;
+}
+
+/* --- Pulsanti gestione playlist --- */
+.playlist-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.playlist-actions button,
+#createPlaylistBtn {
+  flex: 1 1 auto;
+  background: #222;
+  color: white;
+  border: 1px solid #333;
+  border-radius: 6px;
+  padding: 8px 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.playlist-actions button:hover,
+#createPlaylistBtn:hover {
+  background: var(--accent);
+  border-color: var(--accent-hover);
+  transform: translateY(-1px);
+}
+
+/* --- Titoli --- */
+h2 {
+  text-align: center;
+  color: white;
+  margin-bottom: 8px;
+}
+
+/* --- Area di ricerca centrata --- */
+.search-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 16px;
+  margin: 16px auto;
+  background: var(--card);
+  border-radius: 12px;
+  box-shadow: 0 0 12px rgba(176, 92, 255, 0.25);
+  width: 90%;
+  max-width: 600px;
+}
+
+/* --- Input e pulsanti ricerca --- */
+.search-area .actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.search-area input {
+  flex: 1 1 45%;
+  padding: 8px;
+  border: 1px solid #333;
+  border-radius: 6px;
+  background: #111;
+  color: white;
+  min-width: 120px;
+}
+
+.search-area button {
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.search-area button:hover {
+  background: var(--accent-hover);
+  transform: translateY(-1px);
+}
+
+/* --- Area risultati coerente --- */
+.results-container {
+  width: 100%;
+  max-height: 240px;
+  overflow-y: auto;
+  background: #080808;
+  border-radius: 8px;
+  padding: 8px;
+  box-shadow: inset 0 0 6px rgba(176, 92, 255, 0.1);
+}
+
+
+/* --- Responsività --- */
+@media (max-width: 768px) {
+  main {
+    padding: 20px;
+  }
+
+  #playerCard, aside.right {
+    width: 100%;
+    max-width: none;
+  }
+
+  .controls {
+    gap: 12px;
+  }
+
+  .controls button {
+    width: 50px;
+    height: 50px;
+  }
+
+  #play {
+    width: 60px;
+    height: 60px;
+  }
+
+  .search-area {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .controls button {
+    width: 45px;
+    height: 45px;
+  }
+  #play {
+    width: 55px;
+    height: 55px;
+  }
+
+  h2 {
+    font-size: 18px;
+  }
+}
+
+
+

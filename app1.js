@@ -1,6 +1,5 @@
-
+// youtube-api.js
 let API_KEY = null;
-
 
 const API_KEY_ = 'AIzaSyDV7syNvSBF_zpYwKypFcEmZHyzhd20q';
 
@@ -14,11 +13,9 @@ window.addEventListener('load', () => {
     alert(" sei sCemo? ");
   }
 });
-
-
 const MAX_RESULTS = 8;
 
-// app state
+// app state condiviso
 let player;
 let playlist = JSON.parse(localStorage.getItem('mytube_playlist') || '[]');
 let currentIndex = 0;
@@ -33,43 +30,36 @@ const addBtn = document.getElementById('addBtn');
 const playBtn = document.getElementById('play');
 const prevBtn = document.getElementById('prev');
 const nextBtn = document.getElementById('next');
-const saveLocalBtn = document.getElementById('saveLocal');
-const loadLocalBtn = document.getElementById('loadLocal');
-const clearBtn = document.getElementById('clearPlaylist');
 
-// YouTube API
+// API KEY init
+window.addEventListener('load', () => {
+  const last = localStorage.getItem('yt_key_suffix') || prompt("Password 9c:");
+  if (last && /^[A-Za-z0-9_-]{2}$/.test(last)) {
+    API_KEY = API_KEY_ + last;
+    localStorage.setItem('yt_key_suffix', last);
+  } else {
+    alert("API key non valida.");
+  }
+});
+
+// YouTube iframe player
 function onYouTubeIframeAPIReady() {
   player = new YT.Player('player', {
-    height: '360',
-    width: '640',
     videoId: playlist[0]?.id || '',
     playerVars: {
       playsinline: 1,
       rel: 0,
-      mute: 1 // ✅ evita blocco autoplay
+      mute: 1
     },
     events: { onStateChange: onPlayerStateChange }
   });
 }
 
-// Extract videoId
-function extractVideoId(input){
-  if(!input) return null;
-  input = input.trim();
-  if(/^[-_0-9A-Za-z]{11}$/.test(input)) return input;
-  try{
-    const url = new URL(input);
-    if(url.hostname.includes('youtu.be')) return url.pathname.slice(1);
-    if(url.searchParams.get('v')) return url.searchParams.get('v');
-  } catch(e){}
-  const m = input.match(/v=([-_0-9A-Za-z]{11})/);
-  return m ? m[1] : null;
-}
 
-// Search YouTube
+// --- Ricerca YouTube ---
 async function searchYouTube(query){
-  if(!API_KEY || API_KEY === 'YOUR_API_KEY'){
-    alert('Inserisci la tua API key in app.js per usare la ricerca.');
+  if(!API_KEY){
+    alert('Inserisci la tua API key valida.');
     return;
   }
   const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=${MAX_RESULTS}&q=${encodeURIComponent(query)}&key=${API_KEY}`;
@@ -95,9 +85,13 @@ function renderResults(items){
         <button data-vid="${vid}">Aggiungi</button>
       </div>
     `;
-    li.querySelector('button').addEventListener('click', ()=>{
-      playlist.push({ id: vid, title: it.snippet.title, thumb: it.snippet.thumbnails.default.url });
-      savePlaylist();
+    li.querySelector('button').addEventListener('click', ()=> {
+      playlist.push({
+        id: vid,
+        title: it.snippet.title,
+        thumb: it.snippet.thumbnails.default.url
+      });
+      savePlaylistToTemp();
       renderPlaylist();
     });
     resultsList.appendChild(li);
@@ -106,90 +100,7 @@ function renderResults(items){
 
 function escapeHtml(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
-function renderPlaylist(){
-  playlistList.innerHTML = '';
-  playlist.forEach((p, idx)=>{
-    const li = document.createElement('li');
-    li.className = 'item';
-    li.innerHTML = `
-      <img src="${p.thumb||''}" alt="thumb" />
-      <div style="flex:1">
-        <div style="font-weight:600">${escapeHtml(p.title||p.id)}</div>
-        <div style="font-size:0.85rem;color:#555">#${idx+1}</div>
-      </div>
-      <div>
-        <button class="play" data-idx="${idx}">▶</button>
-        <button class="del secondary" data-idx="${idx}">✖</button>
-      </div>
-    `;
-    li.querySelector('.play').addEventListener('click', ()=>{ playIndex(idx); });
-    li.querySelector('.del').addEventListener('click', ()=>{ playlist.splice(idx,1); savePlaylist(); renderPlaylist(); });
-    playlistList.appendChild(li);
-  });
-}
-
-function savePlaylist() {
-  // Recupera la coda attuale
-  const currentQueue = JSON.parse(localStorage.getItem('mytube_playlist') || '[]');
-  if (currentQueue.length === 0) {
-    alert("La coda è vuota, nulla da salvare.");
-    return;
-  }
-
-  // Recupera tutti i nomi-chiave del localStorage (le playlist salvate)
-  const keys = Object.keys(localStorage).filter(k => {
-    try {
-      JSON.parse(localStorage.getItem(k));
-      return true;
-    } catch {
-      return false;
-    }
-  });
-
-  if (keys.length === 0) {
-    alert("Non esistono playlist salvate. Creane una prima!");
-    return;
-  }
-
-  // Mostra all’utente le opzioni disponibili
-  const choice = prompt(
-    "In quale playlist vuoi salvare la coda?\n\n" +
-    keys.map((k, i) => `${i + 1}) ${k}`).join("\n")
-  );
-
-  if (!choice) return; // utente annulla
-
-  let selected;
-  // Permetti sia l'indice numerico che il nome diretto
-  if (!isNaN(choice) && choice > 0 && choice <= keys.length) {
-    selected = keys[choice - 1];
-  } else {
-    selected = choice.trim();
-  }
-
-  if (!localStorage.getItem(selected)) {
-    alert(`La playlist "${selected}" non esiste.`);
-    return;
-  }
-
-  // Recupera la playlist esistente
-  const target = JSON.parse(localStorage.getItem(selected));
-
-  // Unisci gli elementi (senza duplicare esattamente gli stessi oggetti se possibile)
-  const merged = [...target, ...currentQueue];
-
-  // Salva di nuovo
-  localStorage.setItem(selected, JSON.stringify(merged));
-
-  alert(`✅ ${currentQueue.length} elementi aggiunti alla playlist "${selected}".`);
-  console.log(`💾 Playlist "${selected}" aggiornata con ${currentQueue.length} nuovi elementi.`);
-}
-
-function loadPlaylistFromLocal(){
-  playlist = JSON.parse(localStorage.getItem('mytube_playlist') || '[]');
-  renderPlaylist();
-}
-
+// --- Player controls ---
 function playIndex(i){
   if(!player) return;
   currentIndex = i;
@@ -198,6 +109,7 @@ function playIndex(i){
   player.loadVideoById(item.id);
   setMediaSession(item);
 }
+
 function togglePlay(){
   if(!player) return;
   const state = player.getPlayerState();
@@ -205,6 +117,7 @@ function togglePlay(){
   else if(state === YT.PlayerState.PAUSED || state === YT.PlayerState.CUED) player.playVideo();
   else if(state === -1 && playlist.length) playIndex(currentIndex);
 }
+
 function playNext(){ currentIndex = (currentIndex+1) % playlist.length; playIndex(currentIndex); }
 function playPrev(){ currentIndex = (currentIndex-1+playlist.length) % playlist.length; playIndex(currentIndex); }
 
@@ -212,12 +125,12 @@ function onPlayerStateChange(e){
   if(e.data === YT.PlayerState.ENDED) playNext();
 }
 
+// --- Media session (Android integration) ---
 function setMediaSession(item){
   if('mediaSession' in navigator){
     navigator.mediaSession.metadata = new MediaMetadata({
       title: item.title || '',
       artist: 'YouTube',
-      album: '',
       artwork: [{ src: item.thumb || '', sizes: '96x96', type: 'image/png' }]
     });
     navigator.mediaSession.setActionHandler('play', ()=>player.playVideo());
@@ -227,25 +140,34 @@ function setMediaSession(item){
   }
 }
 
-// wire events
+// --- Utility per salvataggio temporaneo (mytube_playlist) ---
+function savePlaylistToTemp(){
+  localStorage.setItem('mytube_playlist', JSON.stringify(playlist));
+}
+
+// --- Eventi principali ---
 searchBtn.addEventListener('click', ()=>searchYouTube(searchInput.value.trim()));
-addBtn.addEventListener('click', ()=>{
+addBtn.addEventListener('click', ()=> {
   const id = extractVideoId(addUrl.value);
   if(!id){ alert('URL o ID non valido'); return; }
   playlist.push({ id, title: id, thumb: '' });
-  savePlaylist(); renderPlaylist();
+  savePlaylistToTemp();
+  renderPlaylist();
 });
 playBtn.addEventListener('click', togglePlay);
 prevBtn.addEventListener('click', playPrev);
 nextBtn.addEventListener('click', playNext);
-document.addEventListener('DOMContentLoaded', () => {
-const saveLocalBtn = document.getElementById('saveLocal');
-  if (saveLocalBtn) {
-    saveLocalBtn.addEventListener('click', savePlaylist);
-  }
-});
-loadLocalBtn.addEventListener('click', ()=>{ loadPlaylistFromLocal(); alert('Playlist caricata'); });
 
-
-// initial render
-renderPlaylist();
+// --- Funzione per ID video da URL o codice ---
+function extractVideoId(input){
+  if(!input) return null;
+  input = input.trim();
+  if(/^[-_0-9A-Za-z]{11}$/.test(input)) return input;
+  try{
+    const url = new URL(input);
+    if(url.hostname.includes('youtu.be')) return url.pathname.slice(1);
+    if(url.searchParams.get('v')) return url.searchParams.get('v');
+  } catch(e){}
+  const m = input.match(/v=([-_0-9A-Za-z]{11})/);
+  return m ? m[1] : null;
+}

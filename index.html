@@ -12,33 +12,43 @@
   <!-- ✅ Content Security Policy -->
   <!-- Permette iframe e media da YouTube -->
   <meta http-equiv="Content-Security-Policy"
-        content="
-          default-src 'self';
-          script-src 'self' https://www.youtube.com https://www.googleapis.com;
-          frame-src https://www.youtube.com https://www.youtube-nocookie.com;
-          img-src 'self' https://i.ytimg.com https://yt3.ggpht.com data:;
-          connect-src https://www.googleapis.com;
-          style-src 'self' 'unsafe-inline';
-        ">
+      content="
+        default-src 'self';
+        script-src 'self' https://www.youtube.com https://www.googleapis.com;
+        frame-src https://www.youtube.com https://www.youtube-nocookie.com;
+        img-src 'self' https://i.ytimg.com https://yt3.ggpht.com data:;
+        connect-src 'self' https://www.googleapis.com;
+        style-src 'self' 'unsafe-inline';
+      ">
 </head>
 <body>
   <header class="topbar">
-    <h1>MyTube</h1>
-    <div class="actions">
-      <input id="searchInput" placeholder="Cerca video YouTube..." />
-      <button id="searchBtn">Cerca</button>
-      <input id="addUrl" placeholder="Aggiungi per URL o ID" />
-      <button id="addBtn">Aggiungi</button>
+
+    <!-- 🔍 Contenitore della ricerca -->
+    <div class="search-area card">
+      <div class="actions">
+        <input id="searchInput" placeholder="Cerca video YouTube..." />
+        <button id="searchBtn">Cerca</button>
+        <input id="addUrl" placeholder="Aggiungi per URL o ID" />
+        <button id="addBtn">Aggiungi</button>
+      </div>
+
+      <div id="results" class="results-container">
+      <h2>Risultati</h2>
+      <ul id="resultsList"></ul>
+    </div>
+
+      <!-- Toggle futuristico -->
+      <input type="checkbox" id="checkbox" />
+      <label for="checkbox" class="toggle">
+        <div class="bars" id="bar1"></div>
+        <div class="bars" id="bar2"></div>
+        <div class="bars" id="bar3"></div>
+      </label>
     </div>
   </header>
 
-  <main>
-    <section class="left">
-      <div id="results" class="card">
-        <h2>Risultati</h2>
-        <ul id="resultsList"></ul>
-      </div>
-
+<main>
       <div id="playerCard" class="card">
         <div id="player"></div>
         <div class="controls">
@@ -50,12 +60,14 @@
     </section>
 
     <aside class="right card">
+      <button id="createPlaylistBtn">Crea nuova playlist</button>
       <h2>Playlist</h2>
       <ul id="playlistList"></ul>
       <div class="playlist-actions">
         <button id="saveLocal">Salva localmente</button>
         <button id="loadLocal">Carica locale</button>
         <button id="clearPlaylist">Svuota</button>
+        <button id="overwriteLocal">Sovrascrivi playlist</button>
       </div>
     </aside>
   </main>
@@ -65,7 +77,9 @@
   </footer>
 
   <!-- YouTube API + script -->
+  <script src="playlist.js"></script>
   <script src="https://www.youtube.com/iframe_api" async></script>
-  <script src="app.js" defer></script>
+  <script src="app1.js" ></script>
+  <script src="animation.js" ></script>
 </body>
 </html>
