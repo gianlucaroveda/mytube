@@ -123,6 +123,10 @@ function playPrev(){ currentIndex = (currentIndex-1+playlist.length) % playlist.
 
 function onPlayerStateChange(e){
   if(e.data === YT.PlayerState.ENDED) playNext();
+  if (e.data === YT.PlayerState.PLAYING) {
+  const currentVideoId = player.getVideoData().video_id;
+  updateBackgroundFromThumbnail(currentVideoId);
+}
 }
 
 // --- Media session (Android integration) ---
@@ -170,4 +174,52 @@ function extractVideoId(input){
   } catch(e){}
   const m = input.match(/v=([-_0-9A-Za-z]{11})/);
   return m ? m[1] : null;
+}
+
+
+function updateBackgroundFromThumbnail(videoId) {
+  if (!videoId) return;
+
+  const img = new Image();
+  img.crossOrigin = "anonymous";
+  img.src = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
+
+  img.onload = () => {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = img.width;
+    canvas.height = img.height;
+    ctx.drawImage(img, 0, 0);
+    const data = ctx.getImageData(0, 0, img.width, img.height).data;
+
+    let r = 0, g = 0, b = 0;
+    const total = data.length / 4;
+    for (let i = 0; i < data.length; i += 4) {
+      r += data[i];
+      g += data[i + 1];
+      b += data[i + 2];
+    }
+
+    r = Math.round(r / total);
+    g = Math.round(g / total);
+    b = Math.round(b / total);
+
+    // Applica transizione dolce
+    document.body.style.transition = "background-color 1s ease";
+    document.body.style.backgroundColor = `rgb(${r}, ${g}, ${b})`;
+  };
+}
+
+if ('mediaSession' in navigator) {
+  navigator.mediaSession.setActionHandler('play', () => player.playVideo());
+  navigator.mediaSession.setActionHandler('pause', () => player.pauseVideo());
+  navigator.mediaSession.setActionHandler('previoustrack', playPrev);
+  navigator.mediaSession.setActionHandler('nexttrack', playNext);
+  // Mantieni la sessione attiva
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') {
+      // tenta di continuare (alcuni browser lo consentono)
+      try { player.playVideo(); } catch {}
+    }
+  });
 }

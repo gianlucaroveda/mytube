@@ -22,9 +22,36 @@
       ">
 </head>
 <body>
-  <header class="topbar">
+ 
 
-    <!-- 🔍 Contenitore della ricerca -->
+<main>
+      <div id="playerCard" class="card">
+        <div id="player"></div>
+        <div class="controls">
+          <button id="prev">&#x23EE;</button>
+          <button id="play">&#x23f8;</button>
+          <button id="next">&#x23ED;</button>
+        </div>
+      </div>
+    </section>
+
+    <aside class="right card">
+      <button id="createPlaylistBtn">Crea nuova playlist</button>
+      <h2>Playlist</h2>
+      <ul id="playlistList"></ul>
+      <div class="playlist-actions">
+        <button id="saveLocal">Salva localmente</button>
+        <button id="loadLocal">Carica locale</button>
+        <button id="clearPlaylist">Svuota</button>
+        <button id="overwriteLocal">Sovrascrivi playlist</button>
+      </div>
+    </aside>
+</main>
+
+
+
+
+     <!-- 🔍 Contenitore della ricerca -->
     <div class="search-area card">
       <div class="actions">
         <input id="searchInput" placeholder="Cerca video YouTube..." />
@@ -46,31 +73,6 @@
         <div class="bars" id="bar3"></div>
       </label>
     </div>
-  </header>
-
-<main>
-      <div id="playerCard" class="card">
-        <div id="player"></div>
-        <div class="controls">
-          <button id="prev">⟨ Prev</button>
-          <button id="play">Play</button>
-          <button id="next">Next ⟩</button>
-        </div>
-      </div>
-    </section>
-
-    <aside class="right card">
-      <button id="createPlaylistBtn">Crea nuova playlist</button>
-      <h2>Playlist</h2>
-      <ul id="playlistList"></ul>
-      <div class="playlist-actions">
-        <button id="saveLocal">Salva localmente</button>
-        <button id="loadLocal">Carica locale</button>
-        <button id="clearPlaylist">Svuota</button>
-        <button id="overwriteLocal">Sovrascrivi playlist</button>
-      </div>
-    </aside>
-  </main>
 
   <footer class="foot">
     MyTube — playlist locali • Usa la tua YouTube Data API key in app.js
