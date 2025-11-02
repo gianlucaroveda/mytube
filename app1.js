@@ -30,6 +30,7 @@ const addBtn = document.getElementById('addBtn');
 const playBtn = document.getElementById('play');
 const prevBtn = document.getElementById('prev');
 const nextBtn = document.getElementById('next');
+const volumeSlider = document.getElementById('volume');
 
 // API KEY init
 window.addEventListener('load', () => {
@@ -49,11 +50,19 @@ function onYouTubeIframeAPIReady() {
     playerVars: {
       playsinline: 1,
       rel: 0,
-      mute: 1
+      mute: 0
     },
     events: { onStateChange: onPlayerStateChange }
   });
 }
+
+
+// volume
+volumeSlider.addEventListener('input', () => {
+  if (player && typeof player.setVolume === 'function') {
+    player.setVolume(volumeSlider.value);
+  }
+});
 
 
 // --- Ricerca YouTube ---
@@ -69,23 +78,25 @@ async function searchYouTube(query){
   renderResults(data.items || []);
 }
 
-function renderResults(items){
+function renderResults(items) {
   resultsList.innerHTML = '';
-  for(const it of items){
+  for (const it of items) {
     const li = document.createElement('li');
     li.className = 'item';
     const vid = it.id.videoId;
+
     li.innerHTML = `
       <img src="${it.snippet.thumbnails.default.url}" alt="thumb" />
-      <div style="flex:1">
-        <div style="font-weight:600">${escapeHtml(it.snippet.title)}</div>
-        <div style="font-size:0.85rem;color:#555">${escapeHtml(it.snippet.channelTitle)}</div>
+      <div class="text">
+        <div class="scrolling-title">${escapeHtml(it.snippet.title)}</div>
+        <div class="channel">${escapeHtml(it.snippet.channelTitle)}</div>
       </div>
       <div>
         <button data-vid="${vid}">Aggiungi</button>
       </div>
     `;
-    li.querySelector('button').addEventListener('click', ()=> {
+
+    li.querySelector('button').addEventListener('click', () => {
       playlist.push({
         id: vid,
         title: it.snippet.title,
@@ -94,6 +105,7 @@ function renderResults(items){
       savePlaylistToTemp();
       renderPlaylist();
     });
+
     resultsList.appendChild(li);
   }
 }
@@ -126,7 +138,12 @@ function onPlayerStateChange(e){
   if (e.data === YT.PlayerState.PLAYING) {
   const currentVideoId = player.getVideoData().video_id;
   updateBackgroundFromThumbnail(currentVideoId);
-}
+  }
+  if (e.data === YT.PlayerState.PLAYING) {
+    document.getElementById('play').innerHTML = "&#x23F8;"; // pausa
+    } else if (e.data === YT.PlayerState.PAUSED) {
+    document.getElementById('play').innerHTML = "&#x25B6;"; // play
+  }
 }
 
 // --- Media session (Android integration) ---
@@ -215,6 +232,7 @@ if ('mediaSession' in navigator) {
   navigator.mediaSession.setActionHandler('pause', () => player.pauseVideo());
   navigator.mediaSession.setActionHandler('previoustrack', playPrev);
   navigator.mediaSession.setActionHandler('nexttrack', playNext);
+  
   // Mantieni la sessione attiva
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'hidden') {

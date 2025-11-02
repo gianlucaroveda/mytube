@@ -1,6 +1,18 @@
+
+
+
 console.log("✅ Script caricato correttamente");
 
-  // Recupero il bottone
+const togglePlaylistButtons = document.getElementById('togglePlaylistButtons');
+const playlistActions = document.getElementById('playlistActions');
+
+togglePlaylistButtons.addEventListener('click', () => {
+  playlistActions.classList.toggle('hidden');
+});
+
+
+
+// Recupero il bottone
   const createPlaylistBtn = document.getElementById('createPlaylistBtn');
   console.log("🔍 Bottone trovato?", !!createPlaylistBtn);
 
@@ -36,32 +48,36 @@ console.log("✅ Script caricato correttamente");
 
 
 
-  function renderPlaylist(){
+ function renderPlaylist() {
   const playlistList = document.getElementById('playlistList');
   playlistList.innerHTML = '';
+
   playlist.forEach((p, idx) => {
     const li = document.createElement('li');
     li.className = 'item';
     li.innerHTML = `
-      <img src="${p.thumb||''}" alt="thumb" />
-      <div style="flex:1">
-        <div style="font-weight:600">${escapeHtml(p.title||p.id)}</div>
-        <div style="font-size:0.85rem;color:#555">#${idx+1}</div>
+      <img src="${p.thumb || ''}" alt="thumb" />
+      <div class="center-content">
+        <div class="scrolling-title">${escapeHtml(p.title || p.id)}</div>
+        <div class="index-label">#${idx + 1}</div>
       </div>
-      <div>
+      <div class="btns">
         <button class="play" data-idx="${idx}">▶</button>
         <button class="del secondary" data-idx="${idx}">✖</button>
       </div>
     `;
-    li.querySelector('.play').addEventListener('click', ()=> playIndex(idx));
-    li.querySelector('.del').addEventListener('click', ()=> {
-      playlist.splice(idx,1);
+
+    li.querySelector('.play').addEventListener('click', () => playIndex(idx));
+    li.querySelector('.del').addEventListener('click', () => {
+      playlist.splice(idx, 1);
       savePlaylistToTemp();
       renderPlaylist();
     });
+
     playlistList.appendChild(li);
   });
 }
+
 
 // --- Crea una nuova playlist nel localStorage ---
 function createPlaylistFromPrompt() {
@@ -80,11 +96,10 @@ function createPlaylistFromPrompt() {
   alert(`✅ Playlist "${trimmed}" creata.`);
 }
 
-// --- Salva la coda attuale in una playlist esistente (append) ---
 function savePlaylist() {
   const currentQueue = JSON.parse(localStorage.getItem('mytube_playlist') || '[]');
   if (currentQueue.length === 0) {
-    alert("La coda è vuota, nulla da salvare.");
+    alert("❌ La coda è vuota, nulla da salvare.");
     return;
   }
 
@@ -94,34 +109,104 @@ function savePlaylist() {
   });
 
   if (keys.length === 0) {
-    alert("Non esistono playlist salvate. Creane una prima!");
+    alert("⚠️ Non esistono playlist salvate. Creane una prima!");
     return;
   }
 
-  const choice = prompt(
-    "In quale playlist vuoi salvare la coda?\n\n" +
-    keys.map((k, i) => `${i + 1}) ${k}`).join("\n")
-  );
-  if (!choice) return;
+  // Se esiste già un popup, rimuovilo
+  const existing = document.getElementById('playlistSaveOverlay');
+  if (existing) existing.remove();
 
-  let selected;
-  if (!isNaN(choice) && choice > 0 && choice <= keys.length) {
-    selected = keys[choice - 1];
-  } else {
-    selected = choice.trim();
-  }
+  // Overlay
+  const overlay = document.createElement('div');
+  overlay.id = 'playlistSaveOverlay';
+  Object.assign(overlay.style, {
+     color: '#ffffffff',
+    position: 'fixed',
+    inset: '0',
+    background: 'rgba(0,0,0,0.6)',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: '1000'
+  });
 
-  if (!localStorage.getItem(selected)) {
-    alert(`La playlist "${selected}" non esiste.`);
-    return;
-  }
+  // Box
+  const box = document.createElement('div');
+  Object.assign(box.style, {
+     background: '#1d1d1d1f',
+    color: '#ffffffff',
+    padding: '1rem 1.5rem',
+    borderRadius: '1rem',
+    maxWidth: '300px',
+    width: '90%',
+    maxHeight: '70vh',
+    overflowY: 'hidden',
+    scrollbarWidth: 'thin',
+    boxShadow: '0 4px 20px rgba(34, 34, 34, 0.3)',
+    textAlign: 'center'
+  });
 
-  const target = JSON.parse(localStorage.getItem(selected));
-  const merged = [...target, ...currentQueue];
-  localStorage.setItem(selected, JSON.stringify(merged));
+  const title = document.createElement('h3');
+  title.textContent = "Scegli la playlist dove salvare:";
+  title.style.marginBottom = '1rem';
+  box.appendChild(title);
 
-  alert(`✅ ${currentQueue.length} elementi aggiunti alla playlist "${selected}".`);
-  console.log(`💾 Playlist "${selected}" aggiornata con ${currentQueue.length} nuovi elementi.`);
+  // Bottoni per ogni playlist
+  keys.forEach(k => {
+    const btn = document.createElement('button');
+    btn.textContent = k;
+    Object.assign(btn.style, {
+       color: '#ffffffff',
+      display: 'block',
+      width: '100%',
+      padding: '0.9rem',
+      margin: '0.9rem 0',
+      borderRadius: '0.5rem',
+      border: '1px solid #ccc',
+      background: '#35353570',
+      cursor: 'pointer',
+      transition: 'background 0.2s'
+    });
+    btn.addEventListener('mouseover', () => btn.style.background = '#e0e0e0');
+    btn.addEventListener('mouseout', () => btn.style.background = '#f5f5f5');
+    btn.addEventListener('click', () => {
+      const data = localStorage.getItem(k);
+      if (!data) return alert(`⚠️ Playlist "${k}" non esiste.`);
+
+      try {
+        const parsed = JSON.parse(data);
+        if (!Array.isArray(parsed)) throw new Error();
+        const merged = [...parsed, ...currentQueue];
+        localStorage.setItem(k, JSON.stringify(merged));
+
+        overlay.remove();
+        alert(`✅ ${currentQueue.length} elementi aggiunti alla playlist "${k}".`);
+        console.log(`💾 Playlist "${k}" aggiornata con ${currentQueue.length} nuovi elementi.`);
+      } catch {
+        alert("❌ Errore nel salvataggio nella playlist selezionata.");
+      }
+    });
+    box.appendChild(btn);
+  });
+
+  // Bottone "Annulla"
+  const cancel = document.createElement('button');
+  cancel.textContent = "Annulla";
+  Object.assign(cancel.style, {
+    color: '#ffffffff',
+    marginTop: '1rem',
+    padding: '0.4rem 0.8rem',
+    borderRadius: '0.5rem',
+    border: 'none',
+    background: '#27272754',
+    cursor: 'pointer'
+  });
+  cancel.addEventListener('click', () => overlay.remove());
+  box.appendChild(cancel);
+
+  overlay.appendChild(box);
+  document.body.appendChild(overlay);
 }
 
 // --- Carica la coda temporanea mytube_playlist ---
@@ -146,7 +231,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (createBtn) createBtn.addEventListener('click', createPlaylistFromPrompt);
   if (saveBtn) saveBtn.addEventListener('click', savePlaylist);
-  if (loadBtn) loadBtn.addEventListener('click', ()=> { loadPlaylistFromLocal(); alert('Playlist caricata'); });
+  if (loadBtn) loadBtn.addEventListener('click', loadPlaylistFromLocal);
   if (clearBtn) clearBtn.addEventListener('click', clearPlaylist);
 });
 
@@ -171,44 +256,100 @@ function loadPlaylistFromSelection() {
     return;
   }
 
-  // Mostra all'utente le playlist disponibili
-  const choice = prompt(
-    "Quale playlist vuoi caricare?\n\n" +
-    keys.map((k, i) => `${i + 1}) ${k}`).join("\n")
-  );
+  // Se esiste già una finestra aperta, rimuovila
+  const existing = document.getElementById('playlistSelectorOverlay');
+  if (existing) existing.remove();
 
-  if (!choice) return;
+  // Crea overlay
+  const overlay = document.createElement('div');
+  overlay.id = 'playlistSelectorOverlay';
+  Object.assign(overlay.style, {
+    color: '#ffffffff',
+    position: 'fixed',
+    inset: '0',
+    background: 'rgba(0,0,0,0.6)',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: '1000'
+  });
 
-  let selected;
-  // Permetti sia il numero che il nome diretto
-  if (!isNaN(choice) && choice > 0 && choice <= keys.length) {
-    selected = keys[choice - 1];
-  } else {
-    selected = choice.trim();
-  }
+  // Contenitore popup
+  const box = document.createElement('div');
+  Object.assign(box.style, {
+    background: '#1d1d1d1f',
+    color: '#ffffffff',
+    padding: '1rem 1.5rem',
+    borderRadius: '1rem',
+    maxWidth: '300px',
+    width: '90%',
+    maxHeight: '70vh',
+    overflowY: 'hidden',
+    scrollbarWidth: 'thin',
+    boxShadow: '0 4px 20px rgba(34, 34, 34, 0.3)',
+    textAlign: 'center'
+  });
 
-  const data = localStorage.getItem(selected);
-  if (!data) {
-    alert(`⚠️ La playlist "${selected}" non esiste.`);
-    return;
-  }
+  const title = document.createElement('h3');
+  title.textContent = "Seleziona una playlist:";
+  title.style.marginBottom = '1rem';
+  box.appendChild(title);
 
-  try {
-    const parsed = JSON.parse(data);
-    if (!Array.isArray(parsed)) throw new Error();
+  // Lista opzioni
+  keys.forEach(k => {
+    const btn = document.createElement('button');
+    btn.textContent = k;
+    Object.assign(btn.style, {
+      color: '#ffffffff',
+      display: 'block',
+      width: '100%',
+      padding: '0.9rem',
+      margin: '0.9rem 0',
+      borderRadius: '0.5rem',
+      border: '1px solid #ccc',
+      background: '#35353570',
+      cursor: 'pointer',
+      transition: 'background 0.2s'
+    });
+    btn.addEventListener('mouseover', () => btn.style.background = '#e0e0e0');
+    btn.addEventListener('mouseout', () => btn.style.background = '#f5f5f5');
+    btn.addEventListener('click', () => {
+      const data = localStorage.getItem(k);
+      if (!data) return alert(`⚠️ Playlist "${k}" non esiste.`);
+      try {
+        const parsed = JSON.parse(data);
+        if (!Array.isArray(parsed)) throw new Error();
+        localStorage.setItem('mytube_playlist', JSON.stringify(parsed));
+        if (typeof playlist !== 'undefined') {
+          playlist = parsed;
+          if (typeof renderPlaylist === 'function') renderPlaylist();
+        }
+        overlay.remove();
+        alert(`✅ Playlist "${k}" caricata (${parsed.length} elementi).`);
+      } catch {
+        alert("❌ Errore nel caricamento della playlist selezionata.");
+      }
+    });
+    box.appendChild(btn);
+  });
 
-    // Salva come coda attuale
-    localStorage.setItem('mytube_playlist', JSON.stringify(parsed));
-    alert(`✅ Playlist "${selected}" caricata (${parsed.length} elementi).`);
+  // Bottone per annullare
+  const cancel = document.createElement('button');
+  cancel.textContent = "Annulla";
+  Object.assign(cancel.style, {
+    color: '#ffffffff',
+    marginTop: '1rem',
+    padding: '0.4rem 0.8rem',
+    borderRadius: '0.5rem',
+    border: 'none',
+    background: '#27272754',
+    cursor: 'pointer'
+  });
+  cancel.addEventListener('click', () => overlay.remove());
+  box.appendChild(cancel);
 
-    // Aggiorna la variabile globale e la UI
-    if (typeof playlist !== 'undefined') {
-      playlist = parsed;
-      if (typeof renderPlaylist === 'function') renderPlaylist();
-    }
-  } catch (e) {
-    alert("❌ Errore nel caricamento della playlist selezionata.");
-  }
+  overlay.appendChild(box);
+  document.body.appendChild(overlay);
 }
 
 // Aggiunge listener al bottone “Carica locale”
@@ -228,12 +369,8 @@ function overwritePlaylist() {
   }
 
   const keys = Object.keys(localStorage).filter(k => {
-    try {
-      JSON.parse(localStorage.getItem(k));
-      return true;
-    } catch {
-      return false;
-    }
+    try { JSON.parse(localStorage.getItem(k)); return true; }
+    catch { return false; }
   });
 
   if (keys.length === 0) {
@@ -241,31 +378,99 @@ function overwritePlaylist() {
     return;
   }
 
-  // Mostra le playlist esistenti
-  const choice = prompt(
-    "Quale playlist vuoi sovrascrivere?\n⚠️ Verrà sostituita completamente!\n\n" +
-    keys.map((k, i) => `${i + 1}) ${k}`).join("\n")
-  );
+  // Se esiste già un popup, rimuovilo
+  const existing = document.getElementById('playlistOverwriteOverlay');
+  if (existing) existing.remove();
 
-  if (!choice) return;
+  // Overlay
+  const overlay = document.createElement('div');
+  overlay.id = 'playlistOverwriteOverlay';
+  Object.assign(overlay.style, {
+    color: '#ffffffff',
+    position: 'fixed',
+    inset: '0',
+    background: 'rgba(0,0,0,0.6)',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: '1000'
+  });
 
-  let selected;
-  if (!isNaN(choice) && choice > 0 && choice <= keys.length) {
-    selected = keys[choice - 1];
-  } else {
-    selected = choice.trim();
-  }
+  // Box principale
+  const box = document.createElement('div');
+  Object.assign(box.style, {
+    background: '#1d1d1d1f',
+    color: '#ffffffff',
+    padding: '1rem 1.5rem',
+    borderRadius: '1rem',
+    maxWidth: '300px',
+    width: '90%',
+    maxHeight: '70vh',
+    overflowY: 'hidden',
+    scrollbarWidth: 'thin',
+    boxShadow: '0 4px 20px rgba(34, 34, 34, 0.3)',
+    textAlign: 'center'
+  });
 
-  if (!localStorage.getItem(selected)) {
-    alert(`⚠️ La playlist "${selected}" non esiste.`);
-    return;
-  }
+  const title = document.createElement('h3');
+  title.textContent = "⚠️ Scegli la playlist da sovrascrivere:";
+  title.style.marginBottom = '1rem';
+  title.style.color = '#c00';
+  box.appendChild(title);
 
-  if (!confirm(`Sei sicuro di voler sovrascrivere "${selected}" con la coda attuale?`)) return;
+  // Aggiunge bottoni per ogni playlist
+  keys.forEach(k => {
+    const btn = document.createElement('button');
+    btn.textContent = k;
+    Object.assign(btn.style, {
+      color: '#ffffffff',
+      display: 'block',
+      width: '100%',
+      padding: '0.9rem',
+      margin: '0.9rem 0',
+      borderRadius: '0.5rem',
+      border: '1px solid #ccc',
+      background: '#35353570',
+      cursor: 'pointer',
+      transition: 'background 0.2s'
+    });
+    btn.addEventListener('mouseover', () => btn.style.background = '#f0d0d0');
+    btn.addEventListener('mouseout', () => btn.style.background = '#f9f9f9');
+    btn.addEventListener('click', () => {
+      if (!confirm(`⚠️ Sovrascrivere completamente "${k}" con la coda attuale (${currentQueue.length} elementi)?`))
+        return;
 
-  localStorage.setItem(selected, JSON.stringify(currentQueue));
-  alert(`✅ Playlist "${selected}" sovrascritta con ${currentQueue.length} elementi.`);
+      try {
+        localStorage.setItem(k, JSON.stringify(currentQueue));
+        overlay.remove();
+        alert(`✅ Playlist "${k}" sovrascritta con ${currentQueue.length} elementi.`);
+        console.log(`💾 Playlist "${k}" sovrascritta.`);
+      } catch {
+        alert("❌ Errore nel salvataggio della playlist.");
+      }
+    });
+    box.appendChild(btn);
+  });
+
+  // Bottone annulla
+  const cancel = document.createElement('button');
+  cancel.textContent = "Annulla";
+  Object.assign(cancel.style, {
+    color: '#ffffffff',
+    marginTop: '1rem',
+    padding: '0.4rem 0.8rem',
+    borderRadius: '0.5rem',
+    border: 'none',
+    background: '#27272754',
+    cursor: 'pointer'
+  });
+  cancel.addEventListener('click', () => overlay.remove());
+  box.appendChild(cancel);
+
+  overlay.appendChild(box);
+  document.body.appendChild(overlay);
 }
+
 
 // Listener per il nuovo bottone
 document.addEventListener('DOMContentLoaded', () => {

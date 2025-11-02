@@ -32,20 +32,31 @@
           <button id="play">&#x23f8;</button>
           <button id="next">&#x23ED;</button>
         </div>
+         <input id="volume" type="range" min="0" max="100" value="50" style="width:100px; margin-left:10px;" color="white"/>
+  
       </div>
     </section>
 
-    <aside class="right card">
+      
+       <!-- 🔽 Questi bottoni saranno nascosti inizialmente -->
+    <div id="playlistActions" class="playlist-actions hidden">
       <button id="createPlaylistBtn">Crea nuova playlist</button>
-      <h2>Playlist</h2>
-      <ul id="playlistList"></ul>
-      <div class="playlist-actions">
-        <button id="saveLocal">Salva localmente</button>
-        <button id="loadLocal">Carica locale</button>
-        <button id="clearPlaylist">Svuota</button>
-        <button id="overwriteLocal">Sovrascrivi playlist</button>
-      </div>
-    </aside>
+      <button id="saveLocal">Salva localmente</button>
+      <button id="loadLocal">Carica locale</button>
+      <button id="clearPlaylist">Svuota</button>
+      <button id="overwriteLocal">Sovrascrivi playlist</button>
+    </div>
+
+    <aside class="right card">
+  <div class="playlist-header">
+    <h2>Playlist</h2>
+    <button id="togglePlaylistButtons" class="icon-btn" title="Mostra/Nascondi controlli playlist">🎵</button>
+  </div>
+  <ul id="playlistList"></ul>
+</aside>
+
+    
+
 </main>
 
 
@@ -61,22 +72,10 @@
       </div>
 
       <div id="results" class="results-container">
-      <h2>Risultati</h2>
       <ul id="resultsList"></ul>
     </div>
-
-      <!-- Toggle futuristico -->
-      <input type="checkbox" id="checkbox" />
-      <label for="checkbox" class="toggle">
-        <div class="bars" id="bar1"></div>
-        <div class="bars" id="bar2"></div>
-        <div class="bars" id="bar3"></div>
-      </label>
     </div>
 
-  <footer class="foot">
-    MyTube — playlist locali • Usa la tua YouTube Data API key in app.js
-  </footer>
 
   <!-- YouTube API + script -->
   <script src="playlist.js"></script>
