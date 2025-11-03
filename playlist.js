@@ -169,7 +169,7 @@ function savePlaylist() {
       transition: 'background 0.2s'
     });
     btn.addEventListener('mouseover', () => btn.style.background = '#e0e0e0');
-    btn.addEventListener('mouseout', () => btn.style.background = '#f5f5f5');
+    btn.addEventListener('mouseout', () => btn.style.background = '#35353570');
     btn.addEventListener('click', () => {
       const data = localStorage.getItem(k);
       if (!data) return alert(`⚠️ Playlist "${k}" non esiste.`);
@@ -312,7 +312,7 @@ function loadPlaylistFromSelection() {
       transition: 'background 0.2s'
     });
     btn.addEventListener('mouseover', () => btn.style.background = '#e0e0e0');
-    btn.addEventListener('mouseout', () => btn.style.background = '#f5f5f5');
+    btn.addEventListener('mouseout', () => btn.style.background = '#35353570');
     btn.addEventListener('click', () => {
       const data = localStorage.getItem(k);
       if (!data) return alert(`⚠️ Playlist "${k}" non esiste.`);
@@ -435,7 +435,7 @@ function overwritePlaylist() {
       transition: 'background 0.2s'
     });
     btn.addEventListener('mouseover', () => btn.style.background = '#f0d0d0');
-    btn.addEventListener('mouseout', () => btn.style.background = '#f9f9f9');
+    btn.addEventListener('mouseout', () => btn.style.background = '#35353570');
     btn.addEventListener('click', () => {
       if (!confirm(`⚠️ Sovrascrivere completamente "${k}" con la coda attuale (${currentQueue.length} elementi)?`))
         return;

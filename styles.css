@@ -130,7 +130,7 @@ main {
 }
 
 .results-container li:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--glass-dark);
 }
 
 /* --- Player Card --- */
@@ -339,9 +339,7 @@ aside.right h2 {
   transition: background 0.2s;
 }
 
-.btns button:hover {
-  background: rgba(255,255,255,0.2);
-}
+
 
 /* ================================
    🔍 SEZIONE RISULTATI

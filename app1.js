@@ -241,3 +241,138 @@ if ('mediaSession' in navigator) {
     }
   });
 }
+
+// === Imposta listener quando la pagina è pronta ===
+document.addEventListener('DOMContentLoaded', () => {
+  const createBtn = document.getElementById('createPlaylistBtn');
+  const saveBtn = document.getElementById('saveLocal');
+  const loadBtn = document.getElementById('loadLocal');
+  const clearBtn = document.getElementById('clearPlaylist');
+  const importBtn = document.getElementById('importPlaylist'); // <-- nuovo
+  const importFixedBtn = document.getElementById('importFixedBtn');
+  if (importFixedBtn) importFixedBtn.addEventListener('click', importFixedPlaylist);
+  if (createBtn) createBtn.addEventListener('click', createPlaylistFromPrompt);
+  if (saveBtn) saveBtn.addEventListener('click', savePlaylist);
+  if (loadBtn) loadBtn.addEventListener('click', loadPlaylistFromLocal);
+  if (clearBtn) clearBtn.addEventListener('click', clearPlaylist);
+  if (importBtn) importBtn.addEventListener('click', importPlaylistFromPrompt); // <-- nuovo
+});
+
+
+async function importFixedPlaylist() {
+  // 🔗 URL della playlist fissa
+  const playlistUrl = "https://www.youtube.com/watch?v=KKlw4l144Kg&list=PL3zg7RiOZwQASmLNJs1drPx3-QXwlvNrf";
+  
+
+  // Estrai l'ID playlist dal link
+  const match = playlistUrl.match(/[?&]list=([^&]+)/);
+  if (!match) {
+    alert("❌ Link playlist non valido.");
+    return;
+  }
+
+  const playlistId = match[1];
+  let nextPageToken = '';
+  const videos = [];
+
+  try {
+    // 📡 Recupera i dati dalla YouTube API
+    do {
+      const response = await fetch(
+        `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&maxResults=50&playlistId=${playlistId}&key=${API_KEY}${nextPageToken ? `&pageToken=${nextPageToken}` : ''}`
+      );
+      const data = await response.json();
+
+      if (!data.items) {
+        throw new Error(data.error?.message || "Errore nel recupero dati dalla YouTube API.");
+      }
+
+      // 🎞️ Aggiungi i video trovati
+      data.items.forEach(item => {
+        const videoId = item.snippet.resourceId?.videoId;
+        if (videoId) {
+          videos.push({
+            id: videoId,
+            title: item.snippet.title,
+            thumb: item.snippet.thumbnails?.default?.url || ''
+          });
+        }
+      });
+
+      nextPageToken = data.nextPageToken;
+    } while (nextPageToken);
+
+    // 🧹 (Opzionale) svuota la playlist attuale
+    playlist.length = 0;
+
+    // 💾 Aggiungi i video e aggiorna la UI
+    playlist.push(...videos);
+    savePlaylistToTemp();
+    renderPlaylist();
+
+    alert(`✅ Importati ${videos.length} video dalla playlist fissa YouTube!`);
+
+  } catch (err) {
+    console.error("Errore durante l'importazione:", err);
+    alert(`❌ Errore: ${err.message}`);
+  }
+}
+
+
+
+
+
+// === Funzione per importare una playlist YouTube ===
+async function importPlaylistFromPrompt() {
+  const url = prompt("📋 Incolla il link della playlist YouTube:");
+  if (!url) return;
+
+  const match = url.match(/[?&]list=([^&]+)/);
+  if (!match) {
+    alert("❌ Link non valido o playlist mancante (deve contenere ?list=...).");
+    return;
+  }
+
+  const playlistId = match[1];
+  await importYouTubePlaylist(playlistId);
+}
+
+// === Carica tutti i video di una playlist da YouTube ===
+async function importYouTubePlaylist(playlistId) {
+  let nextPageToken = '';
+  const videos = [];
+
+  try {
+    do {
+      const response = await fetch(
+        `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&maxResults=50&playlistId=${playlistId}&key=${API_KEY}${nextPageToken ? `&pageToken=${nextPageToken}` : ''}`
+      );
+
+      const data = await response.json();
+      if (!data.items) throw new Error("Errore nel recupero dati dalla YouTube API.");
+
+      data.items.forEach(item => {
+        const videoId = item.snippet.resourceId?.videoId;
+        if (videoId) {
+          videos.push({
+            id: videoId,
+            title: item.snippet.title,
+            thumb: item.snippet.thumbnails?.default?.url || ''
+          });
+        }
+      });
+
+      nextPageToken = data.nextPageToken;
+    } while (nextPageToken);
+
+    playlist.push(...videos);
+    savePlaylistToTemp();
+    renderPlaylist();
+
+    alert(`✅ Importati ${videos.length} video dalla playlist YouTube!`);
+
+  } catch (err) {
+    console.error(err);
+    alert("❌ Errore durante l'importazione della playlist.");
+  }
+}
