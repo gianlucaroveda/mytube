@@ -479,3 +479,119 @@ document.addEventListener('DOMContentLoaded', () => {
     overwriteBtn.addEventListener('click', overwritePlaylist);
   }
 });
+
+function deletePlaylist() {
+  const keys = Object.keys(localStorage).filter(k => {
+    try { JSON.parse(localStorage.getItem(k)); return true; }
+    catch { return false; }
+  });
+
+  if (keys.length === 0) {
+    alert("❌ Non ci sono playlist salvate da eliminare.");
+    return;
+  }
+
+  // Rimuovi eventuale overlay esistente
+  const existing = document.getElementById('playlistDeleteOverlay');
+  if (existing) existing.remove();
+
+  // Overlay scuro
+  const overlay = document.createElement('div');
+  overlay.id = 'playlistDeleteOverlay';
+  Object.assign(overlay.style, {
+    color: '#ffffffff',
+    position: 'fixed',
+    inset: '0',
+    background: 'rgba(0,0,0,0.6)',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: '1000'
+  });
+
+  // Box principale
+  const box = document.createElement('div');
+  Object.assign(box.style, {
+    background: '#1d1d1d1f',
+    color: '#ffffffff',
+    padding: '1rem 1.5rem',
+    borderRadius: '1rem',
+    maxWidth: '300px',
+    width: '90%',
+    maxHeight: '70vh',
+    overflowY: 'auto',
+    scrollbarWidth: 'thin',
+    boxShadow: '0 4px 20px rgba(34, 34, 34, 0.3)',
+    textAlign: 'center'
+  });
+
+  const title = document.createElement('h3');
+  title.textContent = "🗑️ Seleziona la playlist da eliminare:";
+  title.style.marginBottom = '1rem';
+  title.style.color = '#f33';
+  box.appendChild(title);
+
+  // Bottoni per ogni playlist salvata
+   keys.forEach(k => {
+    const btn = document.createElement('button');
+    btn.textContent = k;
+    Object.assign(btn.style, {
+      display: 'block',
+      width: '100%',
+      padding: '0.8rem',
+      margin: '0.5rem 0',
+      borderRadius: '0.5rem',
+      border: '1px solid #aaa',
+      background: '#35353570',
+      color: '#fff',
+      cursor: 'pointer',
+      transition: 'background 0.2s'
+    });
+
+    // Se è mytube_playlist → disabilitato
+    if (k === 'mytube_playlist') {
+      btn.disabled = true;
+      btn.style.opacity = '0.5';
+      btn.style.cursor = 'not-allowed';
+      btn.title = "Non puoi eliminare la playlist principale";
+    } else {
+      btn.addEventListener('mouseover', () => btn.style.background = '#f0d0d0');
+      btn.addEventListener('mouseout', () => btn.style.background = '#35353570');
+      btn.addEventListener('click', () => {
+        if (confirm(`⚠️ Vuoi davvero eliminare la playlist "${k}"?`)) {
+          localStorage.removeItem(k);
+          overlay.remove();
+          alert(`🗑️ Playlist "${k}" eliminata con successo.`);
+        }
+      });
+    }
+
+    box.appendChild(btn);
+  });
+
+  // Bottone Annulla
+  const cancel = document.createElement('button');
+  cancel.textContent = "Annulla";
+  Object.assign(cancel.style, {
+    color: '#ffffffff',
+    marginTop: '1rem',
+    padding: '0.4rem 0.8rem',
+    borderRadius: '0.5rem',
+    border: 'none',
+    background: '#27272754',
+    cursor: 'pointer'
+  });
+  cancel.addEventListener('click', () => overlay.remove());
+  box.appendChild(cancel);
+
+  overlay.appendChild(box);
+  document.body.appendChild(overlay);
+}
+
+// 🔗 Listener per il bottone "Elimina playlist"
+document.addEventListener('DOMContentLoaded', () => {
+  const deleteBtn = document.getElementById('deletePlaylistBtn');
+  if (deleteBtn) {
+    deleteBtn.addEventListener('click', deletePlaylist);
+  }
+});
