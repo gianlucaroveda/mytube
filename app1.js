@@ -13,7 +13,8 @@ window.addEventListener('load', () => {
     alert(" sei sCemo? ");
   }
 });
-const MAX_RESULTS = 8;
+const MAX_RESULTS = 20;
+const MAX_RESULTS_PLAYLIST = 50; // Nuovo limite per playlist
 
 // app state condiviso
 let player;
@@ -25,6 +26,7 @@ const resultsList = document.getElementById('resultsList');
 const playlistList = document.getElementById('playlistList');
 const searchInput = document.getElementById('searchInput');
 const searchBtn = document.getElementById('searchBtn');
+const searchPlaylistBtn = document.getElementById('searchPlaylistBtn');
 const addUrl = document.getElementById('addUrl');
 const addBtn = document.getElementById('addBtn');
 const playBtn = document.getElementById('play');
@@ -168,6 +170,9 @@ function savePlaylistToTemp(){
 
 // --- Eventi principali ---
 searchBtn.addEventListener('click', ()=>searchYouTube(searchInput.value.trim()));
+
+searchPlaylistBtn.addEventListener('click', ()=>searchYouTubePlaylists(searchInput.value.trim()));
+
 addBtn.addEventListener('click', ()=> {
   const id = extractVideoId(addUrl.value);
   if(!id){ alert('URL o ID non valido'); return; }
@@ -375,4 +380,77 @@ async function importYouTubePlaylist(playlistId) {
     console.error(err);
     alert("❌ Errore durante l'importazione della playlist.");
   }
+}
+
+
+async function searchYouTubePlaylists(query) {
+  if (!API_KEY) {
+    alert('Inserisci la tua API key valida.');
+    return;
+  }
+
+  const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=playlist&maxResults=${MAX_RESULTS}&q=${encodeURIComponent(query)}&key=${API_KEY}`;
+  const res = await fetch(url);
+  if (!res.ok) {
+    alert('Errore chiamata YouTube API');
+    return;
+  }
+
+  const data = await res.json();
+  renderPlaylistResults(data.items || []);
+}
+
+function renderPlaylistResults(items) {
+  resultsList.innerHTML = '';
+  for (const it of items) {
+    const li = document.createElement('li');
+    li.className = 'item';
+    const playlistId = it.id.playlistId;
+
+    li.innerHTML = `
+      <img src="${it.snippet.thumbnails.default.url}" alt="thumb" />
+      <div class="text">
+        <div class="scrolling-title">${escapeHtml(it.snippet.title)}</div>
+        <div class="channel">${escapeHtml(it.snippet.channelTitle)}</div>
+      </div>
+      <div>
+        <button data-pid="${playlistId}">Importa</button>
+      </div>
+    `;
+
+    li.querySelector('button').addEventListener('click', () => {
+      importPlaylistById(playlistId);
+    });
+
+    resultsList.appendChild(li);
+  }
+}
+
+// --- Importa i video da una playlist trovata ---
+async function importPlaylistById(playlistId) {
+  if (!API_KEY) {
+    alert('Inserisci la tua API key valida.');
+    return;
+  }
+
+  const url = `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&maxResults=${MAX_RESULTS_PLAYLIST}&playlistId=${playlistId}&key=${API_KEY}`;
+  const res = await fetch(url);
+  if (!res.ok) {
+    alert('Errore nel caricamento della playlist.');
+    return;
+  }
+
+  const data = await res.json();
+  for (const it of data.items) {
+    const vid = it.snippet.resourceId.videoId;
+    playlist.push({
+      id: vid,
+      title: it.snippet.title,
+      thumb: it.snippet.thumbnails?.default?.url || ''
+    });
+  }
+
+  savePlaylistToTemp();
+  renderPlaylist();
+  alert('✅ Playlist importata con successo!');
 }

@@ -62,19 +62,33 @@
 </main>
 
 
-     <!-- 🔍 Contenitore della ricerca -->
-    <div class="search-area card">
-      <div class="actions">
-        <input id="searchInput" placeholder="Cerca video YouTube..." />
-        <button id="searchBtn">Cerca</button>
-        <input id="addUrl" placeholder="Aggiungi per URL o ID" />
-        <button id="addBtn">Aggiungi</button>
+ <!-- 🔍 Contenitore della ricerca -->
+<div class="search-area card">
+  <div class="actions">
+    <!-- 🔹 Riga principale -->
+    <div class="search-row">
+      <input id="searchInput" placeholder="Cerca su YouTube..." />
+      <div class="button-column">
+        <button id="searchBtn">Video</button>
+        <button id="searchPlaylistBtn">Playlist</button>
       </div>
+    </div>
 
-      <div id="results" class="results-container">
-      <ul id="resultsList"></ul>
+    <!-- 🔹 Bottone opzioni -->
+    <button id="toggleLinkBtn" class="dots-btn">...</button>
+
+    <!-- 🔹 Sezione nascosta/visibile -->
+    <div id="linkSearch" class="hidden-link">
+      <input id="addUrl" placeholder="Aggiungi per URL o ID" />
+      <button id="addBtn">Aggiungi</button>
     </div>
-    </div>
+  </div>
+
+  <div id="results" class="results-container">
+    <ul id="resultsList"></ul>
+  </div>
+</div>
+
 
 
   <!-- YouTube API + script -->

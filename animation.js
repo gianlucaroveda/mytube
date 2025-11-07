@@ -1,6 +1,4 @@
-const resultsDiv = document.getElementById("results");
-const checkbox = document.getElementById("checkbox");
-
-checkbox.addEventListener("change", () => {
-  resultsDiv.classList.toggle("collapsed", checkbox.checked);
+document.getElementById("toggleLinkBtn").addEventListener("click", () => {
+  const linkBox = document.getElementById("linkSearch");
+  linkBox.classList.toggle("show");
 });
