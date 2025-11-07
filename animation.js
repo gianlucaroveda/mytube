@@ -3,3 +3,11 @@ document.getElementById("toggleLinkBtn").addEventListener("click", () => {
   linkBox.classList.toggle("show");
 });
 
+document.addEventListener('DOMContentLoaded', () => {
+  const gotoHighlightsBtn = document.getElementById('gotoHighlightsBtn');
+  if (gotoHighlightsBtn) {
+    gotoHighlightsBtn.addEventListener('click', () => {
+      window.location.href = "highlights.html";
+    });
+  }
+});
