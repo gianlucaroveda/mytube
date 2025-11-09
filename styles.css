@@ -277,6 +277,7 @@ aside.right h2 {
   justify-content: center;
   gap: 10px;
   margin-top: 12px;
+  background-color: transparent;
 }
 
 .playlist-actions button,
@@ -336,9 +337,6 @@ aside.right h2 {
   transition: transform 0.2s ease;
 }
 
-.icon-btn:hover {
-  transform: scale(1.2);
-}
 
 /* Lista playlist scrollabile */
 #playlistList {
@@ -354,9 +352,10 @@ aside.right h2 {
 #playlistList li.item {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 6px 4px;
+  padding: 6px 10px;
   border-bottom: 1px solid rgba(255,255,255,0.2);
+  position: relative; /* necessario per posizionare la X in absolute */
+  cursor: pointer; /* rende cliccabile l'intero li */
 }
 
 #playlistList li.item:last-child {
@@ -372,11 +371,10 @@ aside.right h2 {
 
 /* Contenuto testuale */
 .center-content {
-  flex: 1;
   overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
+  white-space: nowrap;
+  text-align: center;
+  flex: 0.84; /* occupa tutto lo spazio disponibile */
 }
 
 .center-content .scrolling-title {
@@ -384,9 +382,8 @@ aside.right h2 {
   font-weight: 600;
   font-size: 0.95rem;
   color: white;
-  white-space: nowrap;
-  overflow: hidden;
-  animation: bounceScroll 6s ease-in-out infinite alternate;
+  transform: translateX(0);
+  animation: bounceScroll 8s ease-in-out infinite alternate;
 }
 
 .center-content .index-label {
@@ -394,20 +391,22 @@ aside.right h2 {
   color: #aaa;
 }
 
-/* Pulsanti a destra */
+
+/* Pulsante X posizionato a destra */
 .btns {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
 }
 
 .btns button {
   background: transparent;
-  border: 1px solid rgba(255,255,255,0.3);
+  border: none;
   color: white;
-  border-radius: 4px;
+  font-size: 1.2rem;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: transform 0.2s;
 }
 
 
@@ -464,11 +463,16 @@ aside.right h2 {
 ==================================*/
 
 @keyframes bounceScroll {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-40%); }
+  0% { transform: translateX(10%); }
+  100% { transform: translateX(-10%); }
 }
 
-
+/* Disabilita animazione in orizzontale */
+@media (orientation: landscape) {
+  .center-content .scrolling-title {
+    animation: none;
+  }
+}
 
 /* --- Titoli --- */
 h2 {

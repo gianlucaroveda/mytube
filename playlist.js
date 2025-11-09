@@ -47,8 +47,7 @@ togglePlaylistButtons.addEventListener('click', () => {
   }
 
 
-
- function renderPlaylist() {
+function renderPlaylist() {
   const playlistList = document.getElementById('playlistList');
   playlistList.innerHTML = '';
 
@@ -62,12 +61,19 @@ togglePlaylistButtons.addEventListener('click', () => {
         <div class="index-label">#${idx + 1}</div>
       </div>
       <div class="btns">
-        <button class="play" data-idx="${idx}">▶</button>
         <button class="del secondary" data-idx="${idx}">✖</button>
       </div>
     `;
 
-    li.querySelector('.play').addEventListener('click', () => playIndex(idx));
+    // Click sull'intero li per far partire la traccia
+    li.addEventListener('click', (e) => {
+      // Se il click NON è sulla X, riproduci la traccia
+      if (!e.target.classList.contains('del')) {
+        playIndex(idx);
+      }
+    });
+
+    // Click sulla X per rimuovere la traccia
     li.querySelector('.del').addEventListener('click', () => {
       playlist.splice(idx, 1);
       savePlaylistToTemp();
@@ -75,8 +81,39 @@ togglePlaylistButtons.addEventListener('click', () => {
     });
 
     playlistList.appendChild(li);
+
+    // ==== ANIMAZIONE SCROLL TITOLI LUNGHI ====
+    const container = li.querySelector('.center-content');
+    const title = li.querySelector('.scrolling-title');
+
+    const containerWidth = container.offsetWidth;
+    const titleWidth = title.scrollWidth;
+
+    if (titleWidth > containerWidth) {
+      const distance = titleWidth - containerWidth;
+      let start = null;
+
+      function step(timestamp) {
+        if (!start) start = timestamp;
+        const elapsed = (timestamp - start) / 1000; // secondi
+        const progress = (elapsed / 6) % 2; // ciclo avanti-indietro (6s di default)
+
+        let offset;
+        if (progress <= 1) {
+          offset = -distance * progress; // andata
+        } else {
+          offset = -distance * (2 - progress); // ritorno
+        }
+
+        title.style.transform = `translateX(${offset}px)`;
+        requestAnimationFrame(step);
+      }
+
+      requestAnimationFrame(step);
+    }
   });
 }
+
 
 
 // --- Crea una nuova playlist nel localStorage ---

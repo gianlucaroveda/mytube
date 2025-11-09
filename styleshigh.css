@@ -372,11 +372,9 @@ aside.right h2 {
 
 /* Contenuto testuale */
 .center-content {
-  flex: 1;
   overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
+  white-space: nowrap;
+  text-align: center;
 }
 
 .center-content .scrolling-title {
@@ -384,9 +382,12 @@ aside.right h2 {
   font-weight: 600;
   font-size: 0.95rem;
   color: white;
-  white-space: nowrap;
-  overflow: hidden;
-  animation: bounceScroll 6s ease-in-out infinite alternate;
+
+  /* centrato inizialmente */
+  transform: translateX(0);
+  
+  /* animazione */
+  animation: bounceScroll 8s ease-in-out infinite alternate;
 }
 
 .center-content .index-label {
@@ -456,7 +457,7 @@ aside.right h2 {
   color: white;
   white-space: nowrap;
   overflow: hidden;
-  animation: bounceScroll 6s ease-in-out infinite alternate;
+  animation: bounceScroll 8s ease-in-out infinite alternate;
 }
 
 /* ================================
@@ -464,11 +465,16 @@ aside.right h2 {
 ==================================*/
 
 @keyframes bounceScroll {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-40%); }
+  0% { transform: translateX(1%); }
+  100% { transform: translateX(-30%); }
 }
 
-
+/* Disabilita animazione in orizzontale */
+@media (orientation: landscape) {
+  .center-content .scrolling-title {
+    animation: none;
+  }
+}
 
 /* --- Titoli --- */
 h2 {
