@@ -4,11 +4,17 @@
 console.log("✅ Script caricato correttamente");
 
 const togglePlaylistButtons = document.getElementById('togglePlaylistButtons');
-const playlistActions = document.getElementById('playlistActions');
+const playlistOverlay = document.getElementById('playlistOverlay');
+const closePlaylistOverlay = document.getElementById('closePlaylistOverlay');
 
 togglePlaylistButtons.addEventListener('click', () => {
-  playlistActions.classList.toggle('hidden');
+  playlistOverlay.classList.toggle('active');
 });
+
+closePlaylistOverlay.addEventListener('click', () => {
+  playlistOverlay.classList.remove('active');
+});
+
 
 
 
@@ -628,6 +634,8 @@ function deletePlaylist() {
 // 🔗 Listener per il bottone "Elimina playlist"
 document.addEventListener('DOMContentLoaded', () => {
   const deleteBtn = document.getElementById('deletePlaylistBtn');
+  console.log("Pagina caricata, renderPlaylist in esecuzione...");
+  renderPlaylist();
   if (deleteBtn) {
     deleteBtn.addEventListener('click', deletePlaylist);
   }

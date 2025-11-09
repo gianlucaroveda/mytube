@@ -1,3 +1,13 @@
+document.addEventListener("DOMContentLoaded", () => {
+  const toggleSearchAreaBtn = document.getElementById("toggleSearchBtn");
+  const searchArea = document.getElementById("searchArea");
+
+  if (toggleSearchAreaBtn && searchArea) {
+    toggleSearchAreaBtn.addEventListener("click", () => {
+      searchArea.classList.toggle("show");
+    });
+  }
+});
 document.getElementById("toggleLinkBtn").addEventListener("click", () => {
   const linkBox = document.getElementById("linkSearch");
   linkBox.classList.toggle("show");
@@ -12,18 +22,3 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
-document.addEventListener('DOMContentLoaded', () => {
-  console.log("DOM completamente caricato"); // verifica che l'evento funzioni
-
-  const gotoYTBtn = document.getElementById('gotoYTBtn');
-  console.log("Bottone trovato:", gotoYTBtn); // controlla se l'elemento esiste
-
-  if (gotoYTBtn) {
-    gotoYTBtn.addEventListener('click', () => {
-      console.log("Bottone cliccato!"); // verifica se il click viene intercettato
-      window.location.href = "index.html";
-    });
-  } else {
-    console.log("Elemento gotoYTBtn non trovato nel DOM!");
-  }
-});

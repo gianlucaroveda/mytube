@@ -1,5 +1,29 @@
-// === YouTube Data API e Playlist dinamica ===
+let API_KEY = null;
+const API_KEY_ = 'AIzaSyDV7syNvSBF_zpYwKypFcEmZHyzhd20q';
 
+function initApiKey() {
+  let last = localStorage.getItem('yt_key_suffix');
+  if (!last || !/^[A-Za-z0-9_-]{2}$/.test(last)) {
+    last = prompt("Inserisci password 9c:");
+    if (!last || !/^[A-Za-z0-9_-]{2}$/.test(last)) {
+      alert("API key non valida.");
+      return false;
+    }
+    localStorage.setItem('yt_key_suffix', last);
+  }
+  API_KEY = API_KEY_ + last;
+  return true;
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  if (!initApiKey()) return;
+
+  // Ora la API_KEY è pronta
+  console.log("API_KEY pronta:", API_KEY);
+
+  // Chiamata iniziale
+  importLatestVideos();
+});
 // Stato globale
 let player;
 let playlist = [];
@@ -32,10 +56,6 @@ async function importLatestVideos() {
   const channelHandle = "@TheGametimeHighlights";
   const maxResults = 10;
 
-  if (!API_KEY) {
-    alert("⚠️ API Key non inizializzata.");
-    return;
-  }
 
   try {
     // 1️⃣ Trova l'ID del canale a partire dall'handle
@@ -61,8 +81,7 @@ async function importLatestVideos() {
     renderPlaylist();
     playIndex(0);
   } catch (err) {
-    console.error(err);
-    alert("❌ Errore durante l'importazione dei video.");
+    
   }
 }
 
@@ -80,9 +99,14 @@ function renderPlaylist() {
         <div class="scrolling-title">${p.title}</div>
         <div class="index-label">#${idx + 1}</div>
       </div>
-      <button class="play">▶</button>
+
     `;
-    li.querySelector('.play').addEventListener('click', () => playIndex(idx));
+
+    // Click sull'intero li per far partire la traccia
+    li.addEventListener('click', () => playIndex(idx));
+
+  
+
     list.appendChild(li);
   });
 }
@@ -101,3 +125,5 @@ function onPlayerStateChange(e) {
 
 // === Bottone per importare ===
 document.getElementById('importChannelBtn').addEventListener('click', importLatestVideos);
+
+

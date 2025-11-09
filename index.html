@@ -33,40 +33,56 @@
           <button id="next">&#x23ED;</button>
         </div>
          <input id="volume" type="range" min="0" max="100" value="50" style="width:100px; margin-left:10px;" color="white"/>
-  
+        
+         <div class="playlist-header">
+            <h2>Playlist</h2>
+            <button id="togglePlaylistButtons" class="icon-btn" title="Mostra/Nascondi controlli playlist">🎵</button>
+          </div>
+          <ul id="playlistList"></ul>
+        
+
       </div>
     </section>
 
       
        <!-- 🔽 Questi bottoni saranno nascosti inizialmente -->
-    <div id="playlistActions" class="playlist-actions hidden">
+
+
+<div id="playlistOverlay" class="hidden-overlay">
+  <div class="overlay-content">
+    
+
+    <!-- 1️⃣ Playlist Actions -->
+    <div id="playlistActions" class="playlist-actions">
       <button id="createPlaylistBtn">+</button>
       <button id="saveLocal">💾</button>
       <button id="loadLocal">📂</button>
       <button id="clearPlaylist">🗑️</button>
       <button id="overwriteLocal">Sovrascrivi</button>
       <button id="importPlaylist">📋 Importa playlist</button>
-      <button id="deletePlaylistBtn">❌ Elimina playlist</button> 
+      <button id="deletePlaylistBtn">❌ Elimina playlist</button>
     </div>
 
-    <aside class="right card">
-  <div class="playlist-header">
-    <h2>Playlist</h2>
-    <button id="togglePlaylistButtons" class="icon-btn" title="Mostra/Nascondi controlli playlist">🎵</button>
-  </div>
-  <ul id="playlistList"></ul>
-</aside>
+    <!-- 2️⃣ Import fixed button -->
+    <button id="importFixedBtn">🎬 YouTube</button>
 
-  <button id="importFixedBtn">🎬 YouTube</button>
-    
+
+    <!-- Highlight button -->
+    <button id="gotoHighlightsBtn">🏀</button>
+
+    <button id="closePlaylistOverlay" class="close-btn">✖</button>
+
+  </div>
+</div>
 
 </main>
 
+<button id="toggleSearchBtn" class="dots-btn">🔍</button>
 
  <!-- 🔍 Contenitore della ricerca -->
-<div class="search-area card">
+<!-- Area di ricerca nascosta di default -->
+<div id="searchArea" class="search-area hidden-search">
   <div class="actions">
-    <!-- 🔹 Riga principale -->
     <div class="search-row">
       <input id="searchInput" placeholder="Cerca su YouTube..." />
       <div class="button-column">
@@ -75,10 +91,8 @@
       </div>
     </div>
 
-    <!-- 🔹 Bottone opzioni -->
     <button id="toggleLinkBtn" class="dots-btn">...</button>
 
-    <!-- 🔹 Sezione nascosta/visibile -->
     <div id="linkSearch" class="hidden-link">
       <input id="addUrl" placeholder="Aggiungi per URL o ID" />
       <button id="addBtn">Aggiungi</button>
@@ -89,8 +103,6 @@
     <ul id="resultsList"></ul>
   </div>
 </div>
-<button id="gotoHighlightsBtn">🏀</button>
-
 
 
   <!-- YouTube API + script -->
