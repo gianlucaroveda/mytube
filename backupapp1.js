@@ -20,7 +20,6 @@ const MAX_RESULTS_PLAYLIST = 50; // Nuovo limite per playlist
 let player;
 let playlist = JSON.parse(localStorage.getItem('mytube_playlist') || '[]');
 let currentIndex = 0;
-let currentWindowStart = 0;
 
 // DOM refs
 const resultsList = document.getElementById('resultsList');
@@ -47,39 +46,18 @@ window.addEventListener('load', () => {
 });
 
 // YouTube iframe player
-
-
-const WINDOW_SIZE = 7;
-
-// === YouTube iframe player ===
 function onYouTubeIframeAPIReady() {
   player = new YT.Player('player', {
     videoId: playlist[0]?.id || '',
-    playerVars: { playsinline: 1, rel: 0, mute: 0 },
+    playerVars: {
+      playsinline: 1,
+      rel: 0,
+      mute: 0
+    },
     events: { onStateChange: onPlayerStateChange }
   });
 }
 
-
-
-function loadYouTubeWindow(index) {
-  if (!player || !playlist.length) return;
-
-  // 1 prima, 3 dopo → finestra di 5 elementi centrata sull’attuale
-  const start = Math.max(0, index - 1);
-  const end = Math.min(playlist.length, index + (WINDOW_SIZE - 2));
-  const windowIds = playlist.slice(start, end).map(v => v.id);
-
-  currentWindowStart = start; // memorizza dove inizia la finestra globale
-  const currentInWindow = index - start;
-
-  console.log("🎬 Carico finestra YouTube:", windowIds, "(current:", currentInWindow, ")");
-  player.loadPlaylist({
-    playlist: windowIds,
-    index: currentInWindow,
-    suggestedQuality: 'default'
-  });
-}
 
 // volume
 volumeSlider.addEventListener('input', () => {
@@ -89,134 +67,112 @@ volumeSlider.addEventListener('input', () => {
 });
 
 
-
-function maybeUpdateWindow() {
-  if (!playlist.length) return;
-
-  let relativeIndex = currentIndex - currentWindowStart;
-
-  // caso circolare: se currentIndex è minore di currentWindowStart (si torna indietro)
-  if (relativeIndex < 0) {
-    loadYouTubeWindow(currentIndex);
+// --- Ricerca YouTube ---
+async function searchYouTube(query){
+  if(!API_KEY){
+    alert('Inserisci la tua API key valida.');
     return;
   }
+  const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=${MAX_RESULTS}&q=${encodeURIComponent(query)}&key=${API_KEY}`;
+  const res = await fetch(url);
+  if(!res.ok){ alert('Errore chiamata YouTube API'); return; }
+  const data = await res.json();
+  renderResults(data.items || []);
+}
 
-  // se siamo alla fine della finestra
-  if (relativeIndex >= WINDOW_SIZE - 1) {
-    // se siamo arrivati alla fine della playlist, riparti da zero
-    if (currentIndex === playlist.length - 1) {
-      loadYouTubeWindow(0);
-    } else {
-      loadYouTubeWindow(currentIndex);
-    }
+function renderResults(items) {
+  resultsList.innerHTML = '';
+  for (const it of items) {
+    const li = document.createElement('li');
+    li.className = 'item';
+    const vid = it.id.videoId;
+
+    li.innerHTML = `
+      <img src="${it.snippet.thumbnails.default.url}" alt="thumb" />
+      <div class="text">
+        <div class="scrolling-title">${escapeHtml(it.snippet.title)}</div>
+        <div class="channel">${escapeHtml(it.snippet.channelTitle)}</div>
+      </div>
+      <div>
+        <button data-vid="${vid}">Aggiungi</button>
+      </div>
+    `;
+
+    li.querySelector('button').addEventListener('click', () => {
+      playlist.push({
+        id: vid,
+        title: it.snippet.title,
+        thumb: it.snippet.thumbnails.default.url
+      });
+      savePlaylistToTemp();
+      renderPlaylist();
+    });
+
+    resultsList.appendChild(li);
   }
 }
 
-// --- Carica finestra dinamica ---
-function loadYouTubeWindow(index) {
-  if (!playlist.length || !player) return;
+function escapeHtml(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
-  // calcola start/end finestra
-  const start = Math.max(0, index - 1);
-  let end = start + WINDOW_SIZE;
-
-  // se oltre la lunghezza playlist, fai wrap circolare
-  let windowIds = [];
-  for (let i = 0; i < WINDOW_SIZE; i++) {
-    windowIds.push(playlist[(start + i) % playlist.length].id);
-  }
-
-  currentWindowStart = start;
-  console.log("🎞️ Carico finestra:", windowIds);
-
-  player.loadPlaylist({
-    playlist: windowIds,
-    index: index - start,
-    suggestedQuality: 'default'
-  });
-}
-
-
-
-// === Controlli base ===
-function playIndex(i) {
-  if (!player || !playlist.length) return;
+// --- Player controls ---
+function playIndex(i){
+  if(!player) return;
   currentIndex = i;
-  loadYouTubeWindow(currentIndex);
+  const item = playlist[i];
+  if(!item) return;
+
+  console.log("playIndex chiamato per:", item.id, item.title);
+  player.loadVideoById(item.id);
+
+
+  renderPlaylist();
 }
 
-function playNext() {
-  if (!playlist.length || !player) return;
-
-  // avanzo circular
-  currentIndex = (currentIndex + 1) % playlist.length;
-
-  maybeUpdateWindow();
-  player.nextVideo();
-}
-
-// === playPrev circolare ===
-function playPrev() {
-  if (!playlist.length || !player) return;
-
-  // retrocedo circular
-  currentIndex = (currentIndex - 1 + playlist.length) % playlist.length;
-
-  maybeUpdateWindow();
-  player.previousVideo();
-}
-
-
-function togglePlay() {
-  if (!player) return;
+function togglePlay(){
+  if(!player) return;
   const state = player.getPlayerState();
-  if (state === YT.PlayerState.PLAYING) player.pauseVideo();
-  else if (state === YT.PlayerState.PAUSED || state === YT.PlayerState.CUED) player.playVideo();
-  else if (state === -1 && playlist.length) playIndex(currentIndex);
+  if(state === YT.PlayerState.PLAYING) player.pauseVideo();
+  else if(state === YT.PlayerState.PAUSED || state === YT.PlayerState.CUED) player.playVideo();
+  else if(state === -1 && playlist.length) playIndex(currentIndex);
 }
 
-// === Cambio di stato ===
-function onPlayerStateChange(e) {
-  if (e.data === YT.PlayerState.PLAYING) {
-    const videoId = player.getVideoData().video_id;
-
-    // sincronizza indice
-    const foundIdx = playlist.findIndex(v => v.id === videoId);
-    if (foundIdx !== -1) currentIndex = foundIdx;
-
-    maybeUpdateWindow();
-
-    // aggiorna solo UI
-    updateBackgroundFromThumbnail(videoId);
-    document.getElementById('play').innerHTML = "&#x23F8;";
-  } 
-  else if (e.data === YT.PlayerState.PAUSED) {
-    document.getElementById('play').innerHTML = "&#x25B6;";
-  }
-
+function playNext(){
+  if(playlist.length === 0) return;
+  currentIndex = (currentIndex + 1) % playlist.length;
+  console.log("playNext chiamato, currentIndex:", currentIndex);
+  playIndex(currentIndex);
 }
-// === YouTube state change ===
-function onPlayerStateChange(e) {
-  if (e.data === YT.PlayerState.PLAYING) {
-    const videoId = player.getVideoData().video_id;
 
-    // ✅ recupera indice reale del video corrente dalla playlist interna di YouTube
-    const idxInPlaylist = player.getPlaylistIndex();
-    if (idxInPlaylist !== undefined && idxInPlaylist >= 0) {
-      // calcola l'indice assoluto nel playlist globale
-      currentIndex = currentWindowStart + idxInPlaylist;
-    }
+function playPrev(){
+  if(playlist.length === 0) return;
+  currentIndex = (currentIndex - 1 + playlist.length) % playlist.length;
+  console.log("playPrev chiamato, currentIndex:", currentIndex);
+  playIndex(currentIndex);
+}
 
-    maybeUpdateWindow();
+// --- YouTube state change ---
+function onPlayerStateChange(e){
+  if(e.data === YT.PlayerState.ENDED) playNext();
 
-    // aggiorna solo UI
-    updateBackgroundFromThumbnail(videoId);
+  if(e.data === YT.PlayerState.PLAYING){
+    const currentVideoId = player.getVideoData().video_id;
+    updateBackgroundFromThumbnail(currentVideoId);
     document.getElementById('play').innerHTML = "&#x23F8;"; // pausa
-  } 
-  else if (e.data === YT.PlayerState.PAUSED) {
+  } else if(e.data === YT.PlayerState.PAUSED){
     document.getElementById('play').innerHTML = "&#x25B6;"; // play
   }
 }
+
+
+// --- Click utente per sbloccare audio e Media Session ---
+document.addEventListener('click', () => {
+  if (audioCtx && audioCtx.state === 'suspended') {
+    audioCtx.resume().then(() => {
+      console.log("AudioContext sbloccato, Media Session attiva");
+    });
+  }
+  initMediaSession();
+}, { once: true }); // esegue solo la prima volta
 
 
 // --- Utility per salvataggio temporaneo (mytube_playlist) ---
@@ -525,50 +481,4 @@ async function importPlaylistById(playlistId) {
   savePlaylistToTemp();
   renderPlaylist();
   alert('✅ Playlist importata con successo!');
-}
-
-
-// --- Ricerca YouTube ---
-async function searchYouTube(query){
-  if(!API_KEY){
-    alert('Inserisci la tua API key valida.');
-    return;
-  }
-  const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=${MAX_RESULTS}&q=${encodeURIComponent(query)}&key=${API_KEY}`;
-  const res = await fetch(url);
-  if(!res.ok){ alert('Errore chiamata YouTube API'); return; }
-  const data = await res.json();
-  renderResults(data.items || []);
-}
-
-function renderResults(items) {
-  resultsList.innerHTML = '';
-  for (const it of items) {
-    const li = document.createElement('li');
-    li.className = 'item';
-    const vid = it.id.videoId;
-
-    li.innerHTML = `
-      <img src="${it.snippet.thumbnails.default.url}" alt="thumb" />
-      <div class="text">
-        <div class="scrolling-title">${escapeHtml(it.snippet.title)}</div>
-        <div class="channel">${escapeHtml(it.snippet.channelTitle)}</div>
-      </div>
-      <div>
-        <button data-vid="${vid}">Aggiungi</button>
-      </div>
-    `;
-
-    li.querySelector('button').addEventListener('click', () => {
-      playlist.push({
-        id: vid,
-        title: it.snippet.title,
-        thumb: it.snippet.thumbnails.default.url
-      });
-      savePlaylistToTemp();
-      renderPlaylist();
-    });
-
-    resultsList.appendChild(li);
-  }
 }
