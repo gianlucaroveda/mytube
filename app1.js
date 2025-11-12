@@ -203,14 +203,6 @@ window.addEventListener('keydown', e => {
 
   if(!e.repeat){  // chiama solo alla prima pressione
     switch(e.code){
-      case 'ArrowRight':
-      case 'PageDown':
-        playNext();
-        break;
-      case 'ArrowLeft':
-      case 'PageUp':
-        playPrev();
-        break;
       case 'MediaTrackNext':
         playNext();
         break;
