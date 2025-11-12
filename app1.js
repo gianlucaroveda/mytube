@@ -123,7 +123,8 @@ function playIndex(i){
 
   console.log("playIndex chiamato per:", item.id, item.title);
   player.loadVideoById(item.id);
-  setMediaSession(item);  // aggiorna metadata per Media Session
+
+
   renderPlaylist();
 }
 
@@ -162,59 +163,16 @@ function onPlayerStateChange(e){
   }
 }
 
-// --- Media Session API ---
-if ('mediaSession' in navigator) {
-  navigator.mediaSession.setActionHandler('play', () => {
-    console.log("MediaSession: PLAY premuto");
-    togglePlay();
-  });
-  navigator.mediaSession.setActionHandler('pause', () => {
-    console.log("MediaSession: PAUSE premuto");
-    togglePlay();
-  });
-  navigator.mediaSession.setActionHandler('previoustrack', () => {
-    console.log("MediaSession: PREVIOUS TRACK premuto");
-    playPrev();
-  });
-  navigator.mediaSession.setActionHandler('nexttrack', () => {
-    console.log("MediaSession: NEXT TRACK premuto");
-    playNext();
-  });
 
-  // Mantieni la sessione attiva anche quando la pagina è nascosta
-  document.addEventListener('visibilitychange', () => {
-    if(document.visibilityState === 'hidden'){
-      try { player.playVideo(); } catch {}
-    }
-  });
-}
-
-
-// --- Visibility fallback ---
-document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState === 'hidden') {
-    try { player.playVideo(); } catch {}
+// --- Click utente per sbloccare audio e Media Session ---
+document.addEventListener('click', () => {
+  if (audioCtx && audioCtx.state === 'suspended') {
+    audioCtx.resume().then(() => {
+      console.log("AudioContext sbloccato, Media Session attiva");
+    });
   }
-});
-
-// --- Fallback tasti sulla pagina (freccette + space) ---
-window.addEventListener('keydown', e => {
-  console.log("keydown:", e.code, e.key, "repeat:", e.repeat);
-
-  if(!e.repeat){  // chiama solo alla prima pressione
-    switch(e.code){
-      case 'MediaTrackNext':
-        playNext();
-        break;
-      case 'MediaTrackPrevious':
-        playPrev();
-        break;
-      case 'MediaPlayPause':
-        togglePlay();
-        break;
-    }
-  }
-});
+  initMediaSession();
+}, { once: true }); // esegue solo la prima volta
 
 
 // --- Utility per salvataggio temporaneo (mytube_playlist) ---
