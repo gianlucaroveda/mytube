@@ -211,10 +211,6 @@ window.addEventListener('keydown', e => {
       case 'PageUp':
         playPrev();
         break;
-      case 'Space':
-        e.preventDefault();
-        togglePlay();
-        break;
       case 'MediaTrackNext':
         playNext();
         break;
