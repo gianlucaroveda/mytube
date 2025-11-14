@@ -574,10 +574,8 @@ h2 {
   align-self: center;
 }
 
-/* Se preferisci posizionarlo relativo al .overlay-content (alternativa):
-#playlistOverlay .overlay-content { position: relative; }
-#closePlaylistOverlay { position: absolute; top: 12px; right: 12px; }
-*/
+
+
 
 /* Stile bottoni interni */
 .playlist-actions button,
